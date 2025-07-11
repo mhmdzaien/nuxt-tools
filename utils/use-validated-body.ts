@@ -1,11 +1,17 @@
 import defu from 'defu'
 import { type H3Event, type EventHandlerRequest, readFormData, readBody, createError, readMultipartFormData } from 'h3'
-import type { ZodType, ZodTypeDef } from 'zod'
+import type { ZodType } from 'zod'
 
-export const useValidatedBody = async<Output = unknown & { getFile?(): File, hasFile?(): boolean }, _Def extends ZodTypeDef = ZodTypeDef, _Input = Output>(
+type OutputWithFiles<Output> = Output & {
+  getFile?(name: string): File | null;
+  hasFile?(name: string): boolean;
+  _multipartBody?:any;
+}
+
+export const useValidatedBody = async<Output = OutputWithFiles<any>, _Input = any>(
   event: H3Event<EventHandlerRequest>,
-  zodSchema: ZodType<Output, _Def, _Input> | false,
-): Promise< Output > => {
+  zodSchema: ZodType<Output> | false,
+): Promise<Output> => {
   const checkBody = await readBody(event)
   if (!checkBody) {
     throw createError({
@@ -16,7 +22,7 @@ export const useValidatedBody = async<Output = unknown & { getFile?(): File, has
   const contentType = event.headers.get('content-type')?.toLowerCase()
   let body
   switch (true) {
-    case contentType === 'application/x-www-form-urlencoded':{
+    case contentType === 'application/x-www-form-urlencoded': {
       const formData = await readFormData(event) as unknown as Iterable<[unknown, FormDataEntryValue]>
       body = Object.fromEntries(formData)
       break
@@ -45,7 +51,7 @@ export const useValidatedBody = async<Output = unknown & { getFile?(): File, has
       body._multipartBody = files
       break
     }
-    default:{
+    default: {
       const formData = await readFormData(event) as unknown as Iterable<[unknown, FormDataEntryValue]>
       body = Object.fromEntries(formData)
       break
@@ -54,22 +60,27 @@ export const useValidatedBody = async<Output = unknown & { getFile?(): File, has
   if (zodSchema !== false) {
     const result = await zodSchema.safeParseAsync(body)
     if (result.success) {
+      let data = result.data as OutputWithFiles<Output>
       if (body._multipartBody) {
-        result.data._multipartBody = body._multipartBody
-        result.data.getFile = function (name: string): File {
+        data._multipartBody = body._multipartBody
+        data.getFile = function (name: string): File {
           return this._multipartBody[name] ?? null
         }
-        result.data.hasFile = function (name: string): boolean {
+        data.hasFile = function (name: string): boolean {
           return Object.keys(this._multipartBody).includes(name)
         }
       }
-      return result.data
+      return data
     }
     else {
+      const issues = result.error.issues?.reduce((validation, row) => {
+        const key = row.path.join('.') as string
+        return { ...validation, ...{ [key]: row.message } }
+      }, {})
       throw createError({
         statusCode: 422,
         statusMessage: 'Terdapat Kesalahan Pada Isian',
-        data: result.error.issues,
+        data: issues,
       })
     }
   }

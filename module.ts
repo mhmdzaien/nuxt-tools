@@ -4,6 +4,7 @@ import {
   createResolver,
   addServerImportsDir,
   addServerPlugin,
+  addImportsDir,
 } from '@nuxt/kit'
 import type { Dialect } from 'sequelize'
 import type { NitroConfig } from 'nitropack'
@@ -72,5 +73,6 @@ export default defineNuxtModule<ModuleOptions>({
     })
     addServerPlugin(resolver.resolve('./plugins/sequelize'))
     addServerImportsDir(resolver.resolve('./utils'))
+    addImportsDir(resolver.resolve('./utils-client'))
   },
 })

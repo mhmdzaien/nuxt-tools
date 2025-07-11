@@ -8,7 +8,6 @@ import {
     type EventHandlerRequest,
     type H3Event,
     type H3EventContext,
-    getCookie,
     defineEventHandler,
     setResponseStatus,
 } from 'h3'
@@ -19,7 +18,7 @@ interface MyH3EventContext extends H3EventContext {
     sequelize: Sequelize
 }
 
-export type AuthorizeRequest = '*' | Array<number> | ((user:User) => boolean)
+export type AuthorizeRequest = '*' | Array<number> | ((user: User) => boolean)
 export interface MyH3Event<T extends EventHandlerRequest> extends H3Event<T> {
     context: MyH3EventContext
 }
@@ -61,15 +60,7 @@ export const defineMyEventHandler = <T extends EventHandlerRequest, D>(
         catch (err) {
             const error = err as unknown as { code: number, message: string, statusCode: number, data?: any, stack: unknown, statusMessage?: string }
             setResponseStatus(event, error.statusCode ?? 500)
-            if (error.statusCode === 422) {
-                error.data = error.data?.reduce((validation: object, row: ZodIssue) => {
-                    const key = row.path.join('.') as string
-                    return { ...validation, ...{ [key]: row.message } }
-                }, {})
-            }
-            else {
-                console.log(error.stack)
-            }
+            console.log(error.stack)
             return {
                 code: error.code ?? error.statusCode,
                 message: error.statusMessage ?? error.message,

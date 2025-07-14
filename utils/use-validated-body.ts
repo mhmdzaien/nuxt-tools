@@ -1,11 +1,11 @@
 import defu from 'defu'
-import { type H3Event, type EventHandlerRequest, readFormData, readBody, createError, readMultipartFormData,type MultiPartData } from 'h3'
+import { type H3Event, type EventHandlerRequest, readFormData, readBody, createError, readMultipartFormData, type MultiPartData } from 'h3'
 import type { ZodType } from 'zod'
 
 type OutputWithFiles<Output> = Output & {
   getFile?: (name: string) => MultiPartData | null | undefined;
   hasFile?: (name: string) => boolean | null | undefined;
-  _multipartBody?:any;
+  _multipartBody?: any;
 }
 
 export const useValidatedBody = async<Output = any, _Input = any>(
@@ -43,10 +43,10 @@ export const useValidatedBody = async<Output = any, _Input = any>(
         }
       }
       const multipartBody = await readMultipartFormData(event)
-      const files = multipartBody?.reduce<{[key:string]:MultiPartData}>((result, current) => {
+      const files = multipartBody?.reduce<{ [key: string]: MultiPartData }>((result, current) => {
         if (current.type)
           return { ...result, ...{ [current.name!]: current } }
-        else return result
+        return result
       }, {})
       body._multipartBody = files
       break

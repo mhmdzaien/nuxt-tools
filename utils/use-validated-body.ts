@@ -1,17 +1,17 @@
 import defu from 'defu'
-import { type H3Event, type EventHandlerRequest, readFormData, readBody, createError, readMultipartFormData } from 'h3'
+import { type H3Event, type EventHandlerRequest, readFormData, readBody, createError, readMultipartFormData,type MultiPartData } from 'h3'
 import type { ZodType } from 'zod'
 
 type OutputWithFiles<Output> = Output & {
-  getFile?(name: string): File | null;
-  hasFile?(name: string): boolean;
+  getFile?: (name: string) => MultiPartData | null | undefined;
+  hasFile?: (name: string) => boolean | null | undefined;
   _multipartBody?:any;
 }
 
-export const useValidatedBody = async<Output = OutputWithFiles<any>, _Input = any>(
+export const useValidatedBody = async<Output = any, _Input = any>(
   event: H3Event<EventHandlerRequest>,
   zodSchema: ZodType<Output> | false,
-): Promise<Output> => {
+): Promise<OutputWithFiles<Output>> => {
   const checkBody = await readBody(event)
   if (!checkBody) {
     throw createError({
@@ -43,7 +43,7 @@ export const useValidatedBody = async<Output = OutputWithFiles<any>, _Input = an
         }
       }
       const multipartBody = await readMultipartFormData(event)
-      const files = multipartBody?.reduce((result, current) => {
+      const files = multipartBody?.reduce<{[key:string]:MultiPartData}>((result, current) => {
         if (current.type)
           return { ...result, ...{ [current.name!]: current } }
         else return result
@@ -63,7 +63,7 @@ export const useValidatedBody = async<Output = OutputWithFiles<any>, _Input = an
       let data = result.data as OutputWithFiles<Output>
       if (body._multipartBody) {
         data._multipartBody = body._multipartBody
-        data.getFile = function (name: string): File {
+        data.getFile = function (name: string): MultiPartData {
           return this._multipartBody[name] ?? null
         }
         data.hasFile = function (name: string): boolean {

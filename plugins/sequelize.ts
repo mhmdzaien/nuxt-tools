@@ -5,7 +5,7 @@ import {
 } from 'sequelize'
 import type { NitroApp } from 'nitropack'
 import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
-import { getHeader } from 'h3'
+import { getHeader, H3Event } from 'h3'
 import { initConnection } from '../utils/knex-utils'
 import { mySequelizeModelLoad, mySequelizeOptions } from '#my-sequelize-options'
 
@@ -38,6 +38,11 @@ const multiTenantDb = (nitroApp: NitroApp) => {
   nitroApp.hooks.hook('afterResponse', (event) => {
     event.context.sequelize?.close()
   })
+}
+
+export const useSequelize = (event: H3Event) => {
+    const tenantId = getHeader(event, 'tenant') ?? 'default'
+    return createConnection(tenantId)
 }
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {

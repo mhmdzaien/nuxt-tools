@@ -34,7 +34,7 @@ knex.QueryBuilder.extend('sequelizeOrder', function (order?: Order) {
 
 export const initConnection = (connection: Sequelize) => {
   _sequelize = connection
-  _builder = knex({ client: connection.getDialect() }) as KnexSequelize
+  _builder = knex({ client: connection.getDialect() }) as unknown as KnexSequelize
   _queryGenerator = connection.getQueryInterface().queryGenerator as QueryGenerator
 }
 

@@ -1,10 +1,10 @@
-import type { Knex } from 'knex'
+import { Knex } from 'knex'
 import type { FindAttributeOptions, FindOptions, Model, ModelStatic, Order, QueryTypes, TableName, WhereOptions } from 'sequelize'
-import type { CacheSerializer } from 'persistent-node-cache'
 
-export type KnexSequelize = Knex.QueryBuilder & {
+export type KnexSequelize<TRecord extends {} = any, TResult = any[]> = Knex.QueryBuilder & Knex.Raw & {
   sequelizeOrder(order?: Order): KnexSequelize
   sequelizeWhere(where?: WhereOptions): KnexSequelize
+  raw: Knex.RawBuilder<TRecord>
 }
 export interface QueryGenerator {
   whereQuery(where: WhereOptions): string
@@ -28,16 +28,3 @@ export type RawQueryResult<T> = T extends QueryTypes.SELECT
     : T extends QueryTypes.UPDATE
       ? [undefined, number]
       : undefined
-
-export type PersistentNodeCacheOptions = {
-  cacheName: string
-  period?: number
-  dir?: string
-  opts?: unknown
-  serializer?: CacheSerializer
-}
-
-export type KeyVSqliteOptions = {
-  dir?: string
-  table?: string
-}

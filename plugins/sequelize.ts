@@ -7,6 +7,7 @@ import type { NitroApp } from 'nitropack'
 import { defineNitroPlugin } from 'nitropack/dist/runtime/plugin'
 import { getHeader, H3Event } from 'h3'
 import { initConnection } from '../utils/knex-utils'
+//@ts-ignore
 import { mySequelizeModelLoad, mySequelizeOptions } from '#my-sequelize-options'
 
 const { connection } = mySequelizeOptions

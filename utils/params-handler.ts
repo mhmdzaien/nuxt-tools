@@ -2,7 +2,7 @@ import { type EventHandlerRequest, type H3Event, getRequestURL } from 'h3'
 import type { Order } from 'sequelize'
 import { Op, Sequelize } from 'sequelize'
 import { parse } from 'qs'
-import type { FilterQuery } from '../../types'
+import type { FilterQuery } from '../types'
 
 const mapsOperator: { [key: string]: symbol } = {
   contain: Op.substring as symbol,

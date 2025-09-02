@@ -22,6 +22,7 @@ const createConnection = (identifier: string) => {
       password: connection?.password ?? process.env.DB_PASSWORD ?? '',
       database: connection?.database ?? process.env.DB_NAME ?? '',
       port: Number(connection?.port ?? process.env.DB_PORT ?? '3306'),
+      storage: connection?.database ?? process.env.DB_PATH ?? './'
       // logging: false,
     })
   }

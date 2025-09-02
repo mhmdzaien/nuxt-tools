@@ -12,7 +12,6 @@ import {
     setResponseStatus,
 } from 'h3'
 import type { Sequelize } from 'sequelize'
-import type { ZodIssue } from 'zod'
 
 interface MyH3EventContext extends H3EventContext {
     sequelize: Sequelize
